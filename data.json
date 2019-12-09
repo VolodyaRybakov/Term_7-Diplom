@@ -1,0 +1,49 @@
+{
+    "other_constants": {
+        "earth": 6378100
+    },
+    "stations": {
+        "mendeleevo2": {
+            "latitude": 0.98,
+            "longitude": 0.65,
+            "elevation": 229.053
+        },
+        "irkutsk": {
+            "latitude": 0.91,
+            "longitude": 1.82,
+            "elevation": 505.62
+        }
+    },
+    "satelites": {
+        "etalon2": {
+            "eccentricity": 0.00066,
+            "perigee": 19120000,
+            "inclination": 1.14
+        },
+        "cryosat2": {
+            "eccentricity": 0.0,
+            "altitude": 720000,
+            "inclination": 1.61
+        },
+        "swarm_A": {
+            "eccentricity": 0.00139,
+            "altitude": 460000,
+            "inclination": 1.54
+        },
+        "KOMPSAT_5": {
+            "eccentricity": 0.0,
+            "altitude": 550000,
+            "inclination": 1.693
+        },
+        "QZS_1": {
+            "eccentricity": 0.075,
+            "altitude": 36000000,
+            "inclination": 0.785
+        },
+        "RadioAstron": {
+            "eccentricity": 0.96,
+            "altitude": 350000000,
+            "inclination": 0.89
+        }
+    }
+}
