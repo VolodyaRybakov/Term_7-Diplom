@@ -1,8 +1,7 @@
 from math import pi, sqrt, sin, cos
 import scipy.constants as constants
-from scipy import optimize
+
 import get_data
-import time
 
 INTEGRITY_CONSTANT = 0
 LIGHT_SPEED = constants.c
@@ -28,7 +27,7 @@ sin_theta_0 = sin(theta_0)
 cos_theta_0 = cos(theta_0)
 
 
-def findTurningPeriod(a: float) -> float:
+def __findTurningPeriod__(a: float) -> float:
     '''
         The period of rotation of an artificial earth satellite in an elliptical orbit
 
@@ -44,75 +43,11 @@ def findTurningPeriod(a: float) -> float:
     return 2 * pi * sqrt(a**3 / GM)
 
 
-def timeFromeAnomaly(e_anomaly: float) -> float:
-    '''Function of time from `e_anomaly`.'''
-
-    period = findTurningPeriod(a)
-    return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly))
-
-
-def eAnomalyEquation(e_anomaly: float, t_b: float) -> float:
+def func_1(xi: float, time_xi: float) -> list([float]):
     '''
-        Substitution of the value of `e_anomaly` in the equation
-
-        parameters
-        ----------
-        e_anomaly: float
-
-        returns
-        -------
-        The equality value obtained from the equation: float'''
-
-    cos_e_anomaly = cos(e_anomaly)
-    sin_e_anomaly = sin(e_anomaly)
-
-    period = findTurningPeriod(a)
-    # e_anomaly_b = 0
-
-    a2R_0 = 2 * a * r_0
-
-    complicated_argument = OMEGA * timeFromeAnomaly(e_anomaly) + fi_0 - fi
-
-    result = r_0 ** 2 - \
-        -a2R_0 * \
-        (cos_e_anomaly - e) * \
-        (cos_theta_0 * sin_theta * sin_psi +
-            sin_theta_0 *
-            (cos_psi * cos(complicated_argument) +
-                cos_theta * cos_psi * sin(complicated_argument)
-             )
-         ) + \
-        -a2R_0 * sqrt(1 - (e**2)) * sin_e_anomaly * \
-        (cos_theta_0 * sin_theta * cos_psi -
-            sin_theta_0 *
-            (sin_psi * cos(complicated_argument) -
-                cos_theta * cos_psi * sin(complicated_argument)
-             )
-         ) + \
-        a ** 2 * (1 - e * cos_e_anomaly) ** 2 - \
-        -LIGHT_SPEED**2 * \
-        (INTEGRITY_CONSTANT +
-            ((period / (2*pi)) *
-                (e_anomaly - e * sin_e_anomaly)
-             ) - t_b
-         )**2
-
-    return result
-
-
-def findeAnomalyFromEquation(t_b: float) -> float:
-    '''
-        Numerical solution of the transcendental equation (by dichotomy) with respect to e_anomaly.
-
-        returns
-        -------
-        e_anomaly: float'''
-    e_anomaly = optimize.newton(
-        eAnomalyEquation, pi, args=(t_b, ), maxiter=10**6)
-    return e_anomaly
-
-
-def findIndexingVectorForSatellite(xi: float, time_xi: float) -> list([float]):
+        Функция 1
+        Закон движения спутника по орбите в топоцентрической системе отсчёта
+        "findIndexingVectorForSatellite"'''
     def foo_x_s(xi: float, time_xi: float):
         complicated_argument = OMEGA * time_xi + fi_0 - fi
         cos_comp = cos(complicated_argument)
@@ -154,14 +89,88 @@ def findIndexingVectorForSatellite(xi: float, time_xi: float) -> list([float]):
     return (x_s, y_s, z_s)
 
 
-def findAngleCoords(t_b: float, e_anomaly_r: float) -> list([float]):
+def func_1_1(e_anomaly: float) -> float:
     '''
-        Calculation of the angular coordinates of the direction of sending a laser pulse at time `t_b`.
-        returns
-        -------
-        [`l_x`: float, `l_y`: float, `l_z`: float]'''
+        Функция 1
+        Нахждение времени от эксцентрической аномалии
+        "timeFromEAnomaly"'''
 
-    delta_t = timeFromeAnomaly(e_anomaly_r) - t_b
+    period = __findTurningPeriod__(a)
+    return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly))
+
+
+def func_1_1_reversed(e_anomaly, t):
+    period = __findTurningPeriod__(a)
+    return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly)) - t
+
+
+def func_2(x_s: float, y_s: float, z_s: float) -> bool:
+    '''
+        Функция 2
+        Определяет вхождение спутника в зону отслеживания
+        "accuracyChecking"'''
+    res = z_s - sqrt(x_s**2 + y_s**2 + z_s**2) * cos(1.22)
+    return res > 0
+
+
+def func_3(t_0: float):
+    '''
+        Функция 3
+        Время посылки ладерного импульса
+        "getSendingLaserImpulsTime"'''
+    t_b = t_0 + 0.1 + 1
+    return t_b
+
+
+def func_4(e_anomaly: float, t_b: float) -> float:
+    '''
+        Функция 4
+        Трансцендентное уравнение относительно кси_r
+        "eAnomalyEquation"'''
+    cos_e_anomaly = cos(e_anomaly)
+    sin_e_anomaly = sin(e_anomaly)
+
+    period = __findTurningPeriod__(a)
+    # e_anomaly_b = 0
+
+    a2R_0 = 2 * a * r_0
+
+    complicated_argument = OMEGA * func_1_1(e_anomaly) + fi_0 - fi
+
+    result = r_0 ** 2 - \
+        -a2R_0 * \
+        (cos_e_anomaly - e) * \
+        (cos_theta_0 * sin_theta * sin_psi +
+            sin_theta_0 *
+            (cos_psi * cos(complicated_argument) +
+                cos_theta * cos_psi * sin(complicated_argument)
+             )
+         ) + \
+        -a2R_0 * sqrt(1 - (e**2)) * sin_e_anomaly * \
+        (cos_theta_0 * sin_theta * cos_psi -
+            sin_theta_0 *
+            (sin_psi * cos(complicated_argument) -
+                cos_theta * cos_psi * sin(complicated_argument)
+             )
+         ) + \
+        a ** 2 * (1 - e * cos_e_anomaly) ** 2 - \
+        -LIGHT_SPEED**2 * \
+        (INTEGRITY_CONSTANT +
+            ((period / (2*pi)) *
+                (e_anomaly - e * sin_e_anomaly)
+             ) - t_b
+         )**2
+
+    return result
+
+
+def func_5(t_b: float, e_anomaly_r: float) -> list([float]):
+    '''
+        Функция 5
+        Угловые координаты направления посылки лазерного импульса
+        "findAngleCoords"'''
+
+    delta_t = func_1_1(e_anomaly_r) - t_b
     complicated_argument = OMEGA * t_b + fi_0 - fi
 
     A = 1 / sqrt(
@@ -237,46 +246,3 @@ def findAngleCoords(t_b: float, e_anomaly_r: float) -> list([float]):
         )
 
     return (l_x, l_y, l_z)
-
-
-def accuracyChecking(x_s: float, y_s: float, z_s: float) -> bool:
-    res = z_s - sqrt(x_s**2 + y_s**2 + z_s**2) * cos(1.22)
-    return res > 0
-
-
-def checkingByAccuracy(xi_0, koef):
-    time_0 = timeFromeAnomaly(xi_0)
-    x_s, y_s, z_s = findIndexingVectorForSatellite(xi_0, time_0)
-    while(not accuracyChecking(x_s, y_s, z_s)):
-        xi_0 += koef
-        time_0 = timeFromeAnomaly(xi_0)
-        x_s, y_s, z_s = findIndexingVectorForSatellite(xi_0, time_0)
-    return (xi_0 - koef, x_s, y_s, z_s)
-
-
-if __name__ == "__main__":
-
-    start_time = time.time()
-
-    xi_0 = 0
-    time_0 = timeFromeAnomaly(xi_0)
-    x_s, y_s, z_s = findIndexingVectorForSatellite(xi_0, time_0)
-    for i in range(1, 10):
-        koef = 1/(10**i)
-        xi_0, x_s, y_s, z_s = checkingByAccuracy(xi_0, koef)
-
-    time_0 = timeFromeAnomaly(xi_0)
-    x_s, y_s, z_s = findIndexingVectorForSatellite(xi_0, time_0)
-
-    print(f"Satellite moving coords =\t({x_s},\t{y_s},\t{z_s})")
-
-    t_0 = time_0
-    t_b = t_0 + 0.1 + 1
-
-    e_anomaly_r = findeAnomalyFromEquation(t_b)
-    print(f"Eccentrisity anomaly =\t\t{e_anomaly_r}")
-    l_x, l_y, l_z = findAngleCoords(t_b, e_anomaly_r)
-    print(f"Station angle coords =\t\t({l_x},\t{l_y},\t{l_z})")
-    print(l_x**2 + l_y**2 + l_z**2)
-
-    print(f"\nProgramm works {time.time() - start_time} seconds.")
