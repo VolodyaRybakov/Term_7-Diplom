@@ -1,0 +1,14 @@
+.output {
+    /* width: 75%; */
+    border: 1px solid grey;
+}
+
+.output td.first {
+    width: 30px;
+    border: 1px solid grey;
+}
+
+.output td.second {
+    width: 200px;
+    border: 1px solid grey;
+}
