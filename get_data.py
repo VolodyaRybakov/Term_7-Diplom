@@ -1,7 +1,7 @@
 import json
 
 def getData(station, satelite):
-    with open('C:/lib/Term_7/Term_7-Diplom/data.json', 'r', encoding='utf-8') as fh:
+    with open('data.json', 'r', encoding='utf-8') as fh:
         data = json.load(fh)
 
     a = 0

@@ -1,5 +1,6 @@
 from math import pi, sqrt, sin, cos
 import scipy.constants as constants
+from scipy import optimize
 
 import get_data
 
@@ -41,6 +42,50 @@ def __findTurningPeriod__(a: float) -> float:
             function from 'a': float'''
 
     return 2 * pi * sqrt(a**3 / GM)
+
+
+def __eAnomalyEquation__(e_anomaly: float, t_b: float) -> float:
+
+    cos_e_anomaly = cos(e_anomaly)
+    sin_e_anomaly = sin(e_anomaly)
+
+    period = __findTurningPeriod__(a)
+    # e_anomaly_b = 0
+
+    a2R_0 = 2 * a * r_0
+
+    complicated_argument = OMEGA * func_1_1(e_anomaly) + fi_0 - fi
+
+    result = r_0 ** 2 - \
+        -a2R_0 * \
+        (cos_e_anomaly - e) * \
+        (cos_theta_0 * sin_theta * sin_psi +
+            sin_theta_0 *
+            (cos_psi * cos(complicated_argument) +
+                cos_theta * cos_psi * sin(complicated_argument)
+             )
+         ) + \
+        -a2R_0 * sqrt(1 - (e**2)) * sin_e_anomaly * \
+        (cos_theta_0 * sin_theta * cos_psi -
+            sin_theta_0 *
+            (sin_psi * cos(complicated_argument) -
+                cos_theta * cos_psi * sin(complicated_argument)
+             )
+         ) + \
+        a ** 2 * (1 - e * cos_e_anomaly) ** 2 - \
+        -LIGHT_SPEED**2 * \
+        (INTEGRITY_CONSTANT +
+            ((period / (2*pi)) *
+                (e_anomaly - e * sin_e_anomaly)
+             ) - t_b
+         )**2
+
+    return result
+
+
+def __timeFromEAnomalyEquation__(e_anomaly, t):
+    period = __findTurningPeriod__(a)
+    return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly)) - t
 
 
 def func_1(xi: float, time_xi: float) -> list([float]):
@@ -89,6 +134,17 @@ def func_1(xi: float, time_xi: float) -> list([float]):
     return (x_s, y_s, z_s)
 
 
+def func_1_1_reversed(prev_t_b: float) -> float:
+    '''
+        Функция 1
+        Нахждение времени от эксцентрической аномалии
+        "timeFromEAnomaly"'''
+
+    xi = optimize.newton(
+        __timeFromEAnomalyEquation__, 0, args=(prev_t_b, ), maxiter=10**6)
+    return xi
+
+
 def func_1_1(e_anomaly: float) -> float:
     '''
         Функция 1
@@ -97,11 +153,6 @@ def func_1_1(e_anomaly: float) -> float:
 
     period = __findTurningPeriod__(a)
     return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly))
-
-
-def func_1_1_reversed(e_anomaly, t):
-    period = __findTurningPeriod__(a)
-    return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly)) - t
 
 
 def func_2(x_s: float, y_s: float, z_s: float) -> bool:
@@ -122,46 +173,17 @@ def func_3(t_0: float):
     return t_b
 
 
-def func_4(e_anomaly: float, t_b: float) -> float:
+def func_4(t_b: float) -> float:
     '''
         Функция 4
         Трансцендентное уравнение относительно кси_r
-        "eAnomalyEquation"'''
-    cos_e_anomaly = cos(e_anomaly)
-    sin_e_anomaly = sin(e_anomaly)
+        "FindEAnomalyFromEquation"'''
+    e_anomaly = optimize.newton(
+        __eAnomalyEquation__, pi, args=(t_b, ), maxiter=10**6)
+    return e_anomaly
 
-    period = __findTurningPeriod__(a)
-    # e_anomaly_b = 0
 
-    a2R_0 = 2 * a * r_0
 
-    complicated_argument = OMEGA * func_1_1(e_anomaly) + fi_0 - fi
-
-    result = r_0 ** 2 - \
-        -a2R_0 * \
-        (cos_e_anomaly - e) * \
-        (cos_theta_0 * sin_theta * sin_psi +
-            sin_theta_0 *
-            (cos_psi * cos(complicated_argument) +
-                cos_theta * cos_psi * sin(complicated_argument)
-             )
-         ) + \
-        -a2R_0 * sqrt(1 - (e**2)) * sin_e_anomaly * \
-        (cos_theta_0 * sin_theta * cos_psi -
-            sin_theta_0 *
-            (sin_psi * cos(complicated_argument) -
-                cos_theta * cos_psi * sin(complicated_argument)
-             )
-         ) + \
-        a ** 2 * (1 - e * cos_e_anomaly) ** 2 - \
-        -LIGHT_SPEED**2 * \
-        (INTEGRITY_CONSTANT +
-            ((period / (2*pi)) *
-                (e_anomaly - e * sin_e_anomaly)
-             ) - t_b
-         )**2
-
-    return result
 
 
 def func_5(t_b: float, e_anomaly_r: float) -> list([float]):
@@ -190,7 +212,7 @@ def func_5(t_b: float, e_anomaly_r: float) -> list([float]):
         OMEGA**2 * r_0**2 * delta_t**2 * sin_theta_0**2
     )
 
-    print(f"A = \t{A}")
+    # print(f"A = \t{A}")
 
     l_x = \
         A * \
