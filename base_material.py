@@ -9,18 +9,18 @@ LIGHT_SPEED = constants.c
 GM = 3.98603 * (10**14)
 OMEGA = 7.3 / (10**5)
 
-# data = get_data.getData('irkutsk', 'etalon2')             v
-# data = get_data.getData('mendeleevo2', 'etalon2')         v
+# data = get_data.getData('irkutsk', 'etalon2')             vv
+data = get_data.getData('mendeleevo2', 'etalon2')         # vv
 # data = get_data.getData('irkutsk', 'cryosat2')            x
 # data = get_data.getData('mendeleevo2', 'cryosat2')        x
 # data = get_data.getData('irkutsk', 'swarm_A')             x
 # data = get_data.getData('mendeleevo2', 'swarm_A')         x
 # data = get_data.getData('irkutsk', 'KOMPSAT_5')           x
 # data = get_data.getData('mendeleevo2', 'KOMPSAT_5')       x
-data = get_data.getData('irkutsk', 'QZS_1')
-# data = get_data.getData('mendeleevo2', 'QZS_1')
-# data = get_data.getData('irkutsk', 'RadioAstron')
-# data = get_data.getData('mendeleevo2', 'RadioAstron')
+# data = get_data.getData('irkutsk', 'QZS_1')               v
+# data = get_data.getData('mendeleevo2', 'QZS_1')           ll
+# data = get_data.getData('irkutsk', 'RadioAstron')         v
+# data = get_data.getData('mendeleevo2', 'RadioAstron')     vv
 
 fi_0 = data['longitude']                # fi_0
 fi = 0                                  # fi
