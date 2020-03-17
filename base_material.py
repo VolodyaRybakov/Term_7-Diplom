@@ -9,7 +9,18 @@ LIGHT_SPEED = constants.c
 GM = 3.98603 * (10**14)
 OMEGA = 7.3 / (10**5)
 
-data = get_data.getData('irkutsk', 'RadioAstron')
+# data = get_data.getData('irkutsk', 'etalon2')             v
+# data = get_data.getData('mendeleevo2', 'etalon2')         v
+# data = get_data.getData('irkutsk', 'cryosat2')            x
+# data = get_data.getData('mendeleevo2', 'cryosat2')        x
+# data = get_data.getData('irkutsk', 'swarm_A')             x
+# data = get_data.getData('mendeleevo2', 'swarm_A')         x
+# data = get_data.getData('irkutsk', 'KOMPSAT_5')           x
+# data = get_data.getData('mendeleevo2', 'KOMPSAT_5')       x
+data = get_data.getData('irkutsk', 'QZS_1')
+# data = get_data.getData('mendeleevo2', 'QZS_1')
+# data = get_data.getData('irkutsk', 'RadioAstron')
+# data = get_data.getData('mendeleevo2', 'RadioAstron')
 
 fi_0 = data['longitude']                # fi_0
 fi = 0                                  # fi
@@ -54,7 +65,7 @@ def __eAnomalyEquation__(e_anomaly: float, t_b: float) -> float:
 
     a2R_0 = 2 * a * r_0
 
-    complicated_argument = OMEGA * func_1_1(e_anomaly) + fi_0 - fi
+    complicated_argument = OMEGA * timeFromEAnomaly(e_anomaly) + fi_0 - fi
 
     result = r_0 ** 2 - \
         -a2R_0 * \
@@ -88,11 +99,11 @@ def __timeFromEAnomalyEquation__(e_anomaly, t):
     return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly)) - t
 
 
-def func_1(xi: float, time_xi: float) -> list([float]):
+def findIndexingVectorForSatellite(xi: float, time_xi: float) -> list([float]):
     '''
         Функция 1
-        Закон движения спутника по орбите в топоцентрической системе отсчёта
-        "findIndexingVectorForSatellite"'''
+        ===
+        Закон движения спутника по орбите в топоцентрической системе отсчёта'''
     def foo_x_s(xi: float, time_xi: float):
         complicated_argument = OMEGA * time_xi + fi_0 - fi
         cos_comp = cos(complicated_argument)
@@ -134,65 +145,63 @@ def func_1(xi: float, time_xi: float) -> list([float]):
     return (x_s, y_s, z_s)
 
 
-def func_1_1_reversed(prev_t_b: float) -> float:
+def eAnomalyFromTime(prev_t_b: float) -> float:
     '''
-        Функция 1
-        Нахждение времени от эксцентрической аномалии
-        "timeFromEAnomaly"'''
+        Функция обратная к функции 1_1
+        ===
+        Нахождение эксцентрической аномалии от времени'''
 
     xi = optimize.newton(
         __timeFromEAnomalyEquation__, 0, args=(prev_t_b, ), maxiter=10**6)
     return xi
 
 
-def func_1_1(e_anomaly: float) -> float:
+def timeFromEAnomaly(e_anomaly: float) -> float:
     '''
-        Функция 1
-        Нахждение времени от эксцентрической аномалии
-        "timeFromEAnomaly"'''
+        Функция 1_1
+        ====
+        Нахождение времени от эксцентрической аномалии'''
 
     period = __findTurningPeriod__(a)
     return INTEGRITY_CONSTANT + (period / (2 * pi)) * (e_anomaly - sin(e_anomaly))
 
 
-def func_2(x_s: float, y_s: float, z_s: float) -> bool:
+def accuracyChecking(x_s: float, y_s: float, z_s: float) -> bool:
     '''
         Функция 2
-        Определяет вхождение спутника в зону отслеживания
-        "accuracyChecking"'''
+        ====
+        Определяет вхождение спутника в зону отслеживания'''
     res = z_s - sqrt(x_s**2 + y_s**2 + z_s**2) * cos(1.22)
+    print(res)
     return res > 0
 
 
-def func_3(t_0: float):
+def getSendingLaserImpulsTime(t_0: float):
     '''
         Функция 3
-        Время посылки ладерного импульса
-        "getSendingLaserImpulsTime"'''
+        ====
+        Время посылки лазерного импульса'''
     t_b = t_0 + 0.1 + 1
     return t_b
 
 
-def func_4(t_b: float) -> float:
+def FindEAnomalyFromEquation(t_b: float) -> float:
     '''
         Функция 4
-        Трансцендентное уравнение относительно кси_r
-        "FindEAnomalyFromEquation"'''
+        ====
+        Трансцендентное уравнение относительно кси_r'''
     e_anomaly = optimize.newton(
         __eAnomalyEquation__, pi, args=(t_b, ), maxiter=10**6)
     return e_anomaly
 
 
-
-
-
-def func_5(t_b: float, e_anomaly_r: float) -> list([float]):
+def findAngleCoords(t_b: float, e_anomaly_r: float) -> list([float]):
     '''
         Функция 5
-        Угловые координаты направления посылки лазерного импульса
-        "findAngleCoords"'''
+        ====
+        Угловые координаты направления посылки лазерного импульса'''
 
-    delta_t = func_1_1(e_anomaly_r) - t_b
+    delta_t = timeFromEAnomaly(e_anomaly_r) - t_b
     complicated_argument = OMEGA * t_b + fi_0 - fi
 
     A = 1 / sqrt(

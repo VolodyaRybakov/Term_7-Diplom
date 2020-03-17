@@ -3,7 +3,13 @@ import scipy.constants as constants
 from scipy import optimize
 import time
 
-from base_material import func_1, func_1_1, func_1_1_reversed, func_2, func_3, func_4, func_5
+from base_material import findIndexingVectorForSatellite as func_1
+from base_material import timeFromEAnomaly as func_1_1
+from base_material import eAnomalyFromTime as func_1_1_reversed
+from base_material import accuracyChecking as func_2
+from base_material import getSendingLaserImpulsTime as func_3
+from base_material import FindEAnomalyFromEquation as func_4
+from base_material import findAngleCoords as func_5
 
 
 def checkingByAccuracy(xi_0, koef):
@@ -64,10 +70,10 @@ def getAllLocationAngleCoords(t_b):
 
     while func_2(x_s, y_s, z_s):
         xi_r = func_4(t_b)
-        print(f"Eccentrisity anomaly =\t\t{xi_r}")
+        # print(f"Eccentrisity anomaly =\t\t{xi_r}")
         l_x, l_y, l_z = func_5(t_b, xi_r)
         # l_x, l_y, l_z = func_5(t_b, xi)
-        print(f"Station angle coords =\t\t({l_x},\t{l_y},\t{l_z})")
+        # print(f"Station angle coords =\t\t({l_x},\t{l_y},\t{l_z})")
 
         t_b = func_3(t_b)
         xi = func_1_1_reversed(t_b)
